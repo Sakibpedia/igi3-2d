@@ -23,6 +23,7 @@ var mini = null
 
 func _ready() -> void:
 	root = Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 	lbl_title = _label("title", Vector2(24, 18), Vector2(620, 36), 25, Color(0.93, 0.78, 0.42))
 	lbl_obj = _label("objective", Vector2(24, 58), Vector2(620, 58), 19, Color(0.92, 0.94, 0.90))

@@ -16,6 +16,7 @@ var tag: String = ""
 var sprite: Sprite2D
 var mission: Node = null
 var sheltered: bool = false
+var protect_target: Node = null
 
 
 func setup(p_kind: String, pos: Vector2, p_team: String, p_mission: Node) -> void:

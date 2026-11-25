@@ -308,6 +308,11 @@ func _update_objectives(_delta: float) -> void:
 	if t in ["reach", "extract"] and hero.position.distance_to(target) < 36.0:
 		on_objective_action("auto_%d" % obj_index)
 	elif t == "infiltrate" and interior >= 0:
+		# Leave the interior immediately: otherwise a later E would only exit
+		# the building instead of opening a gate or continuing the mission.
+		var b: Dictionary = city.buildings[interior]
+		interior = -1
+		hero.position = (b["door"] as Vector2) + Vector2(0.0, 14.0)
 		on_objective_action("auto_%d" % obj_index)
 	elif t == "survive":
 		if hero.position.distance_to(target) < 70.0:
@@ -315,6 +320,8 @@ func _update_objectives(_delta: float) -> void:
 			if survive_time >= float(o.get("time", 25.0)):
 				survive_time = 0.0
 				on_objective_action("auto_%d" % obj_index)
+		else:
+			survive_time = 0.0
 	else:
 		survive_time = 0.0
 
@@ -343,7 +350,12 @@ func on_actor_died(victim: Node, killer: Node) -> void:
 		_call_airstrike(hero.position)
 	if victim.team == "gang" or victim.team == "civilian":
 		for a in actors:
-			if a != null and a.alive and a.team == "neutral" and a.position.distance_to(victim.position) < 300.0:
+			if a == null or not a.alive or a.team != "neutral":
+				continue
+			if a.position.distance_to(victim.position) < 300.0:
+				a.alerted = true
+			if a.kind == "protector" and victim.team == "civilian":
+				a.protect_target = killer
 				a.alerted = true
 	if victim == hero:
 		finish(false, "অপারেটিভ নিহত")
@@ -378,12 +390,16 @@ func _update_ai() -> void:
 				a.wander_target = city.random_road_point(a.get_instance_id())
 			a.move((a.wander_target - a.position).normalized(), 0.35, city)
 		elif a.team == "gang":
-			var prey: Node = hero if d < 320.0 else _nearest_civilian(a.position, 260.0)
+			# Knife gangs attack anyone nearby — hero, guards, neutrals or civilians.
+			var prey: Node = _nearest_victim(a.position, 300.0)
 			if prey != null:
 				a.move((prey.position - a.position).normalized(), 0.35, city)
 				if a.position.distance_to(prey.position) < 22.0 and a.fire_cd <= 0.0:
 					a.fire_cd = 1.0
 					prey.take_damage(12, a)
+			else:
+				a.wander_target = city.random_road_point(a.get_instance_id())
+				a.move((a.wander_target - a.position).normalized(), 0.35, city)
 		elif a.team == "enemy":
 			if a.alerted or d < 360.0:
 				a.move((hero_pos - a.position).normalized(), 0.35, city)
@@ -391,7 +407,11 @@ func _update_ai() -> void:
 					a.fire_cd = 0.8
 					shoot(a, hero_pos)
 		elif a.team == "neutral" and a.alerted:
-			var target: Node = _nearest_attacker(a.position)
+			var target: Node = null
+			if a.kind == "protector" and a.protect_target != null and a.protect_target.alive:
+				target = a.protect_target
+			else:
+				target = _nearest_attacker(a.position)
 			if target != null:
 				var td: float = a.position.distance_to(target.position)
 				if td < 400.0:
@@ -410,6 +430,19 @@ func _nearest_civilian(pos: Vector2, radius: float) -> Node:
 			if d < bd:
 				bd = d
 				best = a
+	return best
+
+
+func _nearest_victim(pos: Vector2, radius: float) -> Node:
+	var best: Node = null
+	var bd := radius
+	for a in actors:
+		if a == null or not a.alive or a.team == "gang":
+			continue
+		var d: float = a.position.distance_to(pos)
+		if d < bd:
+			bd = d
+			best = a
 	return best
 
 

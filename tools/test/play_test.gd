@@ -73,6 +73,14 @@ func _play() -> void:
 	else:
 		_ck(false, "airman spawned")
 
+	# Civilian protector only fights the attacker.
+	var civ = _first("civilian")
+	var prot = _first("protector")
+	if civ != null and prot != null:
+		prot.position = civ.position + Vector2(24.0, 0.0)
+		civ.take_damage(999, mission.hero)
+		_ck(bool(prot.alerted) and prot.protect_target == mission.hero, "protector tracks civilian attacker")
+
 	# Shop trade spends money and heals.
 	Game.wallet = 500
 	mission.hero.hp = 40
@@ -94,9 +102,17 @@ func _play() -> void:
 				"infiltrate":
 					mission.interior = city.nearest_building(mission.hero.position)
 					mission.update_objective(0.1)
+					_ck(int(mission.interior) == -1, "infiltrate exits interior")
+					_ck(not city.is_blocked(mission.hero.position, 8.0), "exit point walkable")
 				"reach", "extract":
 					mission.update_objective(0.1)
 				"survive":
+					mission.update_objective(5.0)
+					var safe_pos: Vector2 = mission.hero.position
+					mission.hero.position = safe_pos + Vector2(3000.0, 0.0)
+					mission.update_objective(0.1)
+					_ck(float(mission.survive_time) == 0.0, "survive timer resets outside zone")
+					mission.hero.position = mission.objective_target()
 					mission.update_objective(float(o.get("time", 25.0)) + 1.0)
 				"eliminate":
 					var cmd = null

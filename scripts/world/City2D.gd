@@ -88,7 +88,7 @@ func _build() -> void:
 		road_points.append(Vector2(sin(float(road_points.size())) * 400.0, cos(float(road_points.size() * 0.7)) * 400.0))
 
 	var kinds := ["pharmacy", "clinic", "arms", "grocery", "general", "mobile", "tea", "hardware"]
-	var names := ["فارميسি", "ক্লিনিক", "অস্ত্র বিক্রেতা", "গ্রোসারি", "জেনারেল স্টোর", "মোবাইল শপ", "চায়ের দোকান", "হার্ডওয়্যার"]
+	var names := ["ফার্মাসি", "ক্লিনিক", "অস্ত্র বিক্রেতা", "গ্রোসারি", "জেনারেল স্টোর", "মোবাইল শপ", "চায়ের দোকান", "হার্ডওয়্যার"]
 	for i in 30:
 		var p: Vector2 = road_points[(i * 7 + 3) % road_points.size()]
 		var k := i % kinds.size()
@@ -102,7 +102,15 @@ func _build() -> void:
 	for i in 9:
 		vehicles.append({"pos": road_points[(i * 13 + 7) % road_points.size()],
 			"kind": kinds_v[i % kinds_v.size()], "color": colors_v[i % colors_v.size()]})
-	extraction = road_points[1] + Vector2(24, 24)
+	# Spawn in the dense centre so the first view shows the real colony.
+	var best_idx := 0
+	var best_d := 1.0e12
+	for i in road_points.size():
+		var d: float = (road_points[i] as Vector2).length_squared()
+		if d < best_d:
+			best_d = d
+			best_idx = i
+	extraction = road_points[best_idx]
 
 
 func _add_to_grid(idx: int, rect: Rect2) -> void:

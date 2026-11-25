@@ -24,6 +24,21 @@ Download `IGI3_2D.exe` from the [Releases page](https://github.com/Sakibpedia/ig
 
 ![Actor sprites](docs/images/sprites.png)
 
+### Real gameplay screenshots
+
+Captured from the running game (not concept art):
+
+| Menu | Mission / OSM city |
+|---|---|
+| ![Mission select](docs/images/gameplay-menu.png) | ![Mission gameplay](docs/images/gameplay-mission.png) |
+
+| Shop panel | BCS gate | Mission result |
+|---|---|---|
+| ![Shop](docs/images/gameplay-shop.png) | ![BCS gate](docs/images/gameplay-gate.png) | ![Result](docs/images/gameplay-result.png) |
+
+Regenerate them with `SHOT_MODE=menu|mission|shop|gate|result` and
+`tools/test/ScreenshotTest.tscn`.
+
 ## Missions
 
 | # | Mission | # | Mission |

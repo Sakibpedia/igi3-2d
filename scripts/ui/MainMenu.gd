@@ -43,7 +43,7 @@ func _ready() -> void:
 		b.size = Vector2(210, 94)
 		var locked: bool = idx > Game.unlocked
 		var medal := Game.medal_for(idx)
-		var mark := "[LOCKED]" if locked else ("[GOLD]" if medal == "Gold" else ("[" + medal.upper() + "]" if medal != "" else "[NEW]"))
+		var mark: String = "[LOCKED]" if locked else ("[GOLD]" if medal == "Gold" else ("[" + medal.to_upper() + "]" if medal != "" else "[NEW]"))
 		b.text = "%02d  %s\n%s  %s" % [idx, Game.TITLES_EN[i], Game.TITLES_BN[i], mark]
 		b.disabled = locked
 		b.add_theme_font_size_override("font_size", 17)
