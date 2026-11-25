@@ -33,6 +33,9 @@ func _act() -> void:
 			mission.interact()
 		"gate":
 			mission.hud.open_gate()
+		"interior":
+			mission.interior = city.nearest_building(mission.hero.position)
+			mission.hero.position = city.buildings[mission.interior]["center"]
 		"result":
 			mission.finish(true, "অভিযান সফল — সব লক্ষ্য পূর্ণ")
 		_:

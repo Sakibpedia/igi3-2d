@@ -37,24 +37,46 @@ func _ready() -> void:
 func mission_data(idx: int) -> Dictionary:
 	var i: int = clampi(idx, 1, MISSION_COUNT) - 1
 	var objs: Array = []
-	var push := func(t: String, n: int = 1, extra: Dictionary = {}) -> void:
-		var o := {"type": t, "count": n, "progress": 0}
-		for k in extra.keys():
-			o[k] = extra[k]
-		objs.append(o)
-	push.call("reach", 1, {"text": "কাজলা এলাকায় প্রবেশ করুন"})
-	push.call("photo", 2 if i % 2 == 1 else 3, {"text": "লক্ষ্যগুলোর ছবি তুলুন"})
-	push.call("collect", 1 + (i % 2), {"text": "গোপন নথি সংগ্রহ করুন"})
-	push.call("wiretap", 1, {"text": "ফোনে ওয়্যারট্যাপ লাগান"})
-	push.call("sabotage", 1 + (i % 3), {"text": "লক্ষ্যে চার্জ লাগান"})
-	if i < 6:
-		push.call("infiltrate", 1, {"text": "ভেতরের ঘরে প্রবেশ করুন"})
-		push.call("survive", 1, {"text": "অবস্থান ধরে ২৫ সেকেন্ড টিকে থাকুন", "time": 25.0})
-	else:
-		push.call("eliminate", 1 + (i % 2), {"text": "চিহ্নিত কমান্ডারকে বাদ দিন"})
-		push.call("disable_alarm", 1, {"text": "অ্যালার্ম সিস্টেম অক্ষম করুন"})
-	push.call("bcs_gate", 1, {"text": "BCS প্রশ্নের উত্তর দিয়ে গেট খুলুন"})
-	push.call("extract", 1, {"text": "এক্সট্রাকশন পয়েন্টে ফিরে আসুন"})
+	var labels := {
+		"reach": "কাজলা এলাকায় প্রবেশ করুন",
+		"photo": "লক্ষ্যগুলোর ছবি তুলুন",
+		"collect": "গোপন নথি সংগ্রহ করুন",
+		"wiretap": "ফোনে ওয়্যারট্যাপ লাগান",
+		"sabotage": "লক্ষ্যে চার্জ লাগান",
+		"infiltrate": "ভেতরের ঘরে প্রবেশ করুন",
+		"survive": "অবস্থান ধরে ২৫ সেকেন্ড টিকে থাকুন",
+		"eliminate": "চিহ্নিত কমান্ডারকে বাদ দিন",
+		"disable_alarm": "অ্যালার্ম সিস্টেম অক্ষম করুন",
+		"bcs_gate": "BCS প্রশ্নের উত্তর দিয়ে গেট খুলুন",
+		"extract": "এক্সট্রাকশন পয়েন্টে ফিরে আসুন",
+	}
+	# Different mission families get different objective mixes (7-9 objectives)
+	# instead of every mission sharing one template.
+	var early := [
+		["reach", "photo", "collect", "infiltrate", "survive", "bcs_gate", "extract"],
+		["reach", "wiretap", "collect", "photo", "sabotage", "infiltrate", "bcs_gate", "extract"],
+		["reach", "photo", "sabotage", "infiltrate", "survive", "bcs_gate", "extract"],
+	]
+	var late := [
+		["reach", "collect", "wiretap", "sabotage", "eliminate", "bcs_gate", "extract"],
+		["reach", "photo", "eliminate", "disable_alarm", "sabotage", "bcs_gate", "extract"],
+		["reach", "photo", "collect", "wiretap", "sabotage", "eliminate", "disable_alarm", "bcs_gate", "extract"],
+	]
+	var recipes: Array = early if i < 6 else late
+	var types: Array = recipes[i % recipes.size()]
+	for t in types:
+		var n := 1
+		if t == "photo" or t == "collect":
+			n = 1 + (i % 2)
+		elif t == "sabotage" or t == "eliminate":
+			n = 1 + (i % 3 if t == "sabotage" else i % 2)
+		var extra: Dictionary = {"text": str(labels.get(t, str(t)))}
+		if t == "survive":
+			extra["time"] = 25.0
+		if t == "eliminate":
+			extra["tag"] = "commander"
+		objs.append({"type": t, "count": n, "progress": 0, "text": extra["text"],
+			"time": float(extra.get("time", 0.0)), "tag": str(extra.get("tag", ""))})
 	return {
 		"index": i + 1,
 		"title": TITLES_BN[i],

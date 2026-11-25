@@ -312,7 +312,26 @@ func _update_objectives(_delta: float) -> void:
 		# the building instead of opening a gate or continuing the mission.
 		var b: Dictionary = city.buildings[interior]
 		interior = -1
-		hero.position = (b["door"] as Vector2) + Vector2(0.0, 14.0)
+		var door: Vector2 = b["door"]
+		var exit_pos: Vector2 = door + Vector2(0.0, 14.0)
+		if city.is_blocked(exit_pos, 8.0):
+			var found := false
+			for radius in [22.0, 38.0, 56.0, 80.0, 110.0]:
+				for k in 12:
+					var a := TAU * float(k) / 12.0
+					var p: Vector2 = door + Vector2(cos(a), sin(a)) * radius
+					if not city.is_blocked(p, 8.0):
+						exit_pos = p
+						found = true
+						break
+				if found:
+					break
+			if not found:
+				for p in city.road_points:
+					if not city.is_blocked(p, 8.0):
+						exit_pos = p
+						break
+		hero.position = exit_pos
 		on_objective_action("auto_%d" % obj_index)
 	elif t == "survive":
 		if hero.position.distance_to(target) < 70.0:
@@ -518,6 +537,20 @@ class MarkerLayer extends Node2D:
 	func _draw() -> void:
 		if mission == null or not mission.running:
 			return
+		if int(mission.interior) >= 0:
+			var b: Dictionary = mission.city.buildings[int(mission.interior)]
+			var r: Rect2 = b["rect"]
+			var room := Rect2(r.position - Vector2(26, 26), r.size + Vector2(52, 52))
+			draw_rect(room, Color(0.04, 0.09, 0.10, 0.94))
+			draw_rect(room, Color(0.86, 0.70, 0.38), false, 3.0)
+			var floors: int = mini(int(b["floors"]), 8)
+			for f in floors:
+				var y := room.position.y + (f + 1) * room.size.y / float(floors + 1)
+				draw_line(Vector2(room.position.x + 8, y), Vector2(room.end.x - 8, y), Color(0.25, 0.34, 0.33), 2.0)
+			var mid: Vector2 = b["center"]
+			draw_rect(Rect2(mid - Vector2(22, 22), Vector2(44, 44)), Color(0.18, 0.34, 0.33), false, 2.0)
+			draw_line(mid + Vector2(-12, 8), mid + Vector2(12, -8), Color(0.86, 0.70, 0.38), 3.0)
+			draw_circle(b["door"], 9.0, Color(0.35, 0.85, 0.70, 0.85))
 		var target: Vector2 = mission.call("objective_target")
 		draw_circle(target, 26.0, Color(0.95, 0.72, 0.30, 0.20))
 		draw_circle(target, 26.0, Color(0.95, 0.72, 0.30), false, 3.0)

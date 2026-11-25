@@ -29,11 +29,26 @@ smoke tests. Findings are listed with their fixes.
 - City and save suites still PASS.
 - Menu boots cleanly; exported Windows build launches.
 
-## Honest limitations (not fixed in this pass)
+## Cycle 3 (after deeper playthroughs and screenshots)
 
-- **Mission variety:** all 15 missions use the same objective template
-  (7–10 objectives from the same type pool). Titles, reward, zone, alarm limit
-  and parachute flag differ, but there are no bespoke map layouts per mission.
+Another full pass found and fixed:
+
+| Severity | Issue | Fix |
+|---|---|---|
+| High | All 15 missions used the same 9-objective template | Three early and three late recipes now give 7–9 objectives with different type mixes per mission |
+| Medium | Completing `infiltrate` could drop the hero inside a neighbouring building in the dense OSM city | Ring scan around the door plus road-point fallback finds a truly walkable exit |
+| Medium | Interior state had no visual representation | `MarkerLayer` now draws a room with floor bands, stair marker and green exit door |
+| Low | Credit was only in the README | `© S M Nazmuz Sakib • OSM contributors (ODbL)` now appears in the menu and the in-game HUD |
+
+A parse error introduced by the exit-search patch (`var p :=` inferred from a
+Variant) was caught immediately by the deep test and corrected with explicit
+`Vector2` typing.
+
+## Honest limitations (still open)
+
+- **Mission variety:** missions now differ in objective recipes, but they still
+  share one generated map layout and reuse the same target points. Bespoke
+  per-mission map layouts would be the next large upgrade.
 - **Interiors are abstract:** entering a building teleports the hero to an
   interior/roof state; there is no full multi-floor navigation mesh like the 3D game.
 - **AI is lightweight:** hitscan shooting, simple chase/wander and alert flags;

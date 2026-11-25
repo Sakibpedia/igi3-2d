@@ -30,6 +30,9 @@ func _ready() -> void:
 	lbl_status = _label("status", Vector2(24, 650), Vector2(700, 40), 18, Color(0.55, 0.86, 0.79))
 	lbl_health = _label("health", Vector2(24, 610), Vector2(700, 34), 18, Color(0.96, 0.72, 0.55))
 	lbl_notice = _label("notice", Vector2(330, 500), Vector2(620, 46), 22, Color(0.98, 0.83, 0.45))
+	var credit := _label("credit", Vector2(930, 688), Vector2(330, 24), 13, Color(0.58, 0.66, 0.64))
+	credit.text = "© S M Nazmuz Sakib  •  OSM contributors (ODbL)"
+	credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	panel = Panel.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -340

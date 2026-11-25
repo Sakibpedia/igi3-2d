@@ -51,8 +51,12 @@ aggression registration), an air-force airstrike call, a shop purchase and heal,
 walkable spawn, 9 visible vehicles, and all 9 objectives per mission through
 interaction/proximity/kill hooks.
 
-`[PLAY2D] ALL 15 MISSIONS PASS` — M01 through M15, 393–407 actors each.
-See [REVIEW_2D.md](REVIEW_2D.md) for the 11 issues found and fixed.
+`[PLAY2D] ALL 15 MISSIONS PASS` — M01 through M15, 393–407 actors each,
+7–9 objectives depending on the mission recipe. See
+[REVIEW_2D.md](REVIEW_2D.md) for all issues found and fixed across three cycles.
+
+Six real gameplay screenshots were captured from the running game (menu,
+mission, interior, shop, BCS gate, result) using `tools/test/ScreenshotTest.tscn`.
 
 ## Menu, export and launch
 

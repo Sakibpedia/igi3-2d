@@ -15,7 +15,7 @@ Download `IGI3_2D.exe` from the [Releases page](https://github.com/Sakibpedia/ig
 ## What is in the game
 
 - **1,500 real OSM building footprints** drawn as top-down polygons with street doors, interior floors and roof access. The collision system uses a spatial grid so hundreds of actors stay responsive.
-- **15 chained missions** with 7–10 objectives each: reach, photograph, collect, wiretap, sabotage, eliminate a commander, disable alarms, infiltrate, survive a hold, BCS gates and timed extraction.
+- **15 chained missions** with 7–9 objectives each in three different mission families (recon/wiretap/sabotage early, elimination/alarm-disabling later): reach, photograph, collect, wiretap, sabotage, eliminate a commander, disable alarms, infiltrate, survive a hold, BCS gates and timed extraction.
 - **Safe shops** (pharmacy, clinic, arms dealer, grocery, general store, mobile shop, tea stall and hardware store) selling ammo, medkits, bandages and permanent +25 HP upgrades; enemy loot can be sold. Wallet and upgrades persist between missions.
 - **165 neutral actors** in squads: military, police, air force (a death calls an airstrike), naval commandos, bomber commandos and a white-clad civilian protector. They never fire first but retaliate as a group.
 - **200 civilians** and **18 knife gangs** roam the lanes; harming civilians costs points and raises the alarm.
@@ -32,9 +32,13 @@ Captured from the running game (not concept art):
 |---|---|
 | ![Mission select](docs/images/gameplay-menu.png) | ![Mission gameplay](docs/images/gameplay-mission.png) |
 
-| Shop panel | BCS gate | Mission result |
+| Interior / roof view | Shop panel | BCS gate |
 |---|---|---|
-| ![Shop](docs/images/gameplay-shop.png) | ![BCS gate](docs/images/gameplay-gate.png) | ![Result](docs/images/gameplay-result.png) |
+| ![Interior](docs/images/gameplay-interior.png) | ![Shop](docs/images/gameplay-shop.png) | ![BCS gate](docs/images/gameplay-gate.png) |
+
+| Mission result | | |
+|---|---|---|
+| ![Result](docs/images/gameplay-result.png) | | |
 
 Regenerate them with `SHOT_MODE=menu|mission|shop|gate|result` and
 `tools/test/ScreenshotTest.tscn`.
