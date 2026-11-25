@@ -44,6 +44,19 @@ A parse error introduced by the exit-search patch (`var p :=` inferred from a
 Variant) was caught immediately by the deep test and corrected with explicit
 `Vector2` typing.
 
+## Cycle 4 (final polish pass)
+
+| Severity | Issue | Fix |
+|---|---|---|
+| Medium | Every mission used the same shops/gates/buildings as objective targets | Target selection is offset by mission index, so each operation sends the hero to different streets |
+| Low | Driving had no visual feedback | A vehicle rectangle is drawn under the hero while driving |
+| Low | Mission start only showed the title | Start notice now shows title, objective count and the first three objectives |
+
+After this pass, all headless suites, all 15 deep playthroughs, the exported
+Windows build and GitHub Actions are green. Further work would be feature work
+(bespoke per-mission maps, full interior navigation, voiced Bengali audio,
+Android export), not bug-fixing.
+
 ## Honest limitations (still open)
 
 - **Mission variety:** missions now differ in objective recipes, but they still

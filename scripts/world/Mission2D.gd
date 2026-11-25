@@ -67,6 +67,11 @@ func _ready() -> void:
 		hud.notify("HALO প্যারাস্যুট — অপারেশন শুরু")
 	else:
 		hud.notify("অপারেশন শুরু — %s" % str(data.get("title", "")))
+	var brief: Array = []
+	for o in objectives.slice(0, 3):
+		brief.append(str((o as Dictionary).get("text", "")))
+	hud.notify("%s  •  %d objectives  •  %s" % [
+		str(data.get("title_en", "")), objectives.size(), "  →  ".join(brief)])
 	Sfx.play("ui")
 
 
@@ -112,13 +117,15 @@ func current_objective() -> Dictionary:
 func objective_target() -> Vector2:
 	var o := current_objective()
 	var t := str(o.get("type", ""))
+	# Offset target selection by mission so each operation uses different streets.
+	var seed_off: int = int(data.get("index", 1)) * 7
 	match t:
 		"extract": return city.extraction
-		"bcs_gate": return city.gates[obj_index % city.gates.size()]
+		"bcs_gate": return city.gates[(obj_index + seed_off) % city.gates.size()]
 		"collect", "wiretap", "photo", "sabotage", "disable_alarm":
-			return city.shops[(obj_index * 3) % city.shops.size()]["pos"]
+			return city.shops[(obj_index * 3 + seed_off) % city.shops.size()]["pos"]
 		"reach", "infiltrate", "survive":
-			var idx: int = city.nearest_building(city.random_road_point(100 + obj_index))
+			var idx: int = city.nearest_building(city.random_road_point(100 + obj_index + seed_off))
 			return (city.buildings[idx] as Dictionary)["door"]
 	return _last_target
 
@@ -551,6 +558,10 @@ class MarkerLayer extends Node2D:
 			draw_rect(Rect2(mid - Vector2(22, 22), Vector2(44, 44)), Color(0.18, 0.34, 0.33), false, 2.0)
 			draw_line(mid + Vector2(-12, 8), mid + Vector2(12, -8), Color(0.86, 0.70, 0.38), 3.0)
 			draw_circle(b["door"], 9.0, Color(0.35, 0.85, 0.70, 0.85))
+		if bool(mission.driving):
+			var hp: Vector2 = mission.hero.position
+			draw_rect(Rect2(hp - Vector2(15, 9), Vector2(30, 18)), Color(0.83, 0.64, 0.28))
+			draw_rect(Rect2(hp - Vector2(7, 6), Vector2(14, 12)), Color(0.10, 0.16, 0.18))
 		var target: Vector2 = mission.call("objective_target")
 		draw_circle(target, 26.0, Color(0.95, 0.72, 0.30, 0.20))
 		draw_circle(target, 26.0, Color(0.95, 0.72, 0.30), false, 3.0)
