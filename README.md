@@ -1,5 +1,7 @@
 # IGI 3 2D — Sontek Kajla
 
+[![Build IGI 3 2D](https://github.com/Sakibpedia/igi3-2d/actions/workflows/build_exes.yml/badge.svg)](https://github.com/Sakibpedia/igi3-2d/actions/workflows/build_exes.yml)
+
 ![IGI 3 2D banner](docs/images/banner.png)
 
 **A top-down 2D version of the IGI 3 Sontek Kajla campaign**: 15 Bengali stealth missions across a real OpenStreetMap neighbourhood of Dhaka. Built with **Godot 4.3**, no external downloads required.
@@ -79,7 +81,7 @@ powershell tools/test/run_all.ps1   # all 15 missions
 godot --headless --path . --export-release "Windows Desktop"
 ```
 
-Each test prints `[CITY2D]`, `[SAVE2D]` or `[IGI2D] PASS` and exits with 0.
+Each test prints `[CITY2D]`, `[SAVE2D]` or `[IGI2D] PASS` and exits with 0. Full results for all 15 missions are in [docs/VERIFICATION_2D.md](docs/VERIFICATION_2D.md).
 
 ## Credits and licensing
 

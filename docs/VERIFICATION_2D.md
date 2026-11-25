@@ -48,3 +48,4 @@ Environment: Godot **4.3 stable**, Windows, headless. All commands exited 0.
 - Main menu headless smoke: exit 0, zero script/parse errors, custom Bengali font loads.
 - `godot --headless --path . --export-release "Windows Desktop"` → `IGI3_2D.exe` (87 MB).
 - The exported executable launched on Windows and stayed running for 10 s before being stopped deliberately — no startup crash.
+- GitHub Actions run [45694509506](https://github.com/Sakibpedia/igi3-2d/actions/runs/45694509506) completed successfully in 55 s (import, tests, export, artifact).
