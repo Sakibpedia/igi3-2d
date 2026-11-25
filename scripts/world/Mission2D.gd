@@ -25,10 +25,13 @@ var scope: bool = false
 var game_over: bool = false
 var _think: float = 0.0
 var _hint: float = 0.0
+var _toggle_cd: float = 0.0
 var _airstrikes: Array = []
 var _last_target: Vector2 = Vector2.ZERO
 var marker_layer = null
 var hero_attacked_flag: bool = false
+var paused: bool = false
+var cam: Camera2D = null
 
 
 func _ready() -> void:
@@ -41,9 +44,15 @@ func _ready() -> void:
 	add_child(marker_layer)
 
 	hero = _spawn("hero", "hero", Vector2.ZERO)
-	hero.position = city.extraction if city != null else Vector2.ZERO
+	var spawn: Vector2 = city.extraction
+	if city.is_blocked(spawn, 12.0):
+		for p in city.road_points:
+			if not city.is_blocked(p, 12.0):
+				spawn = p
+				break
+	hero.position = spawn
 	_populate()
-	var cam := Camera2D.new()
+	cam = Camera2D.new()
 	cam.position_smoothing_enabled = true
 	cam.position_smoothing_speed = 8.0
 	hero.add_child(cam)
@@ -52,7 +61,12 @@ func _ready() -> void:
 	hud.mission = self
 	add_child(hud)
 	running = true
-	hud.notify("অপারেশন শুরু — %s" % str(data.get("title", "")))
+	if bool(data.get("parachute", false)):
+		hero.position = spawn + Vector2(0.0, -620.0)
+		create_tween().tween_property(hero, "position", spawn, 1.2).set_ease(Tween.EASE_OUT)
+		hud.notify("HALO প্যারাস্যুট — অপারেশন শুরু")
+	else:
+		hud.notify("অপারেশন শুরু — %s" % str(data.get("title", "")))
 	Sfx.play("ui")
 
 
@@ -112,9 +126,14 @@ func objective_target() -> Vector2:
 func _process(delta: float) -> void:
 	if not running or ended:
 		return
+	if paused:
+		if hud != null:
+			hud.refresh()
+		return
 	elapsed += delta
 	alarm_time += delta
 	_hint += delta
+	_toggle_cd = maxf(0.0, _toggle_cd - delta)
 	_handle_input(delta)
 	if game_over:
 		return
@@ -128,6 +147,7 @@ func _process(delta: float) -> void:
 	if limit > 0.0 and alarms > 0 and alarm_time > limit:
 		finish(false, "সময় শেষ — বের হতে পারেননি")
 	if hud != null:
+		hud.tick(delta)
 		hud.refresh()
 
 
@@ -145,18 +165,21 @@ func _handle_input(delta: float) -> void:
 	hero.face_towards(get_global_mouse_position())
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not driving:
 		shoot(hero, get_global_mouse_position())
-	if Input.is_key_pressed(KEY_ESCAPE):
-		running = false
-		finish(false, "অভিযান বাতিল")
 	if Input.is_key_pressed(KEY_E) and _hint > 0.25:
 		_hint = 0.0
 		interact()
-	if Input.is_key_pressed(KEY_8):
-		scope = not scope
-	if Input.is_key_pressed(KEY_T):
-		thermal = not thermal
-	if Input.is_key_pressed(KEY_M) and hud != null:
-		hud.toggle_map()
+	if _toggle_cd <= 0.0:
+		if Input.is_key_pressed(KEY_8):
+			_toggle_cd = 0.25
+			scope = not scope
+			if cam != null:
+				cam.zoom = Vector2(1.35, 1.35) if scope else Vector2.ONE
+		elif Input.is_key_pressed(KEY_T):
+			_toggle_cd = 0.25
+			thermal = not thermal
+		elif Input.is_key_pressed(KEY_M) and hud != null:
+			_toggle_cd = 0.25
+			hud.toggle_map()
 
 
 func shoot(shooter: Node, aim: Vector2) -> void:
@@ -181,6 +204,8 @@ func shoot(shooter: Node, aim: Vector2) -> void:
 	tracers.append({"from": from, "to": hit_at, "life": 0.12})
 	Sfx.play("shot", 0.9 + randf() * 0.2)
 	if hit != null:
+		if shooter == hero:
+			hero_attacked_flag = true
 		var dmg := 34 if shooter == hero else 18
 		if scope: dmg = 90
 		if shooter.team == "neutral": dmg = 20
@@ -209,6 +234,16 @@ func interact() -> void:
 		interior = -1
 		hud.notify("ছাদের দিক থেকে নেমে এলেন")
 		return
+	# Objectives take priority: a collect/wiretap target often sits at a shop,
+	# so E must advance the mission before opening the trade panel.
+	var target := objective_target()
+	if hero.position.distance_to(target) < 58.0:
+		var t := str(current_objective().get("type", ""))
+		if t == "bcs_gate":
+			hud.open_gate()
+		else:
+			on_objective_action("objective_%d" % obj_index)
+		return
 	var best_shop := -1
 	var best_d := 52.0
 	for i in city.shops.size():
@@ -219,14 +254,6 @@ func interact() -> void:
 	if best_shop >= 0:
 		hud.open_shop(best_shop)
 		return
-	var target := objective_target()
-	if hero.position.distance_to(target) < 58.0:
-		var t := str(current_objective().get("type", ""))
-		if t == "bcs_gate":
-			hud.open_gate()
-		else:
-			on_objective_action("objective_%d" % obj_index)
-		return
 	var bi: int = city.nearest_building(hero.position)
 	var door: Vector2 = (city.buildings[bi] as Dictionary)["door"]
 	if hero.position.distance_to(door) < 28.0:
@@ -235,18 +262,19 @@ func interact() -> void:
 		hud.notify("ভেতরে প্রবেশ করেছেন — [E] বের হন")
 		return
 	# vehicle pickup
-	var vp := _nearest_vehicle()
-	if vp != Vector2.ZERO and hero.position.distance_to(vp) < 40.0:
+	var vp: Dictionary = _nearest_vehicle()
+	if not vp.is_empty() and (vp["pos"] as Vector2).distance_to(hero.position) < 40.0:
 		driving = not driving
-		hud.notify("যানবাহন চালানো শুরু" if driving else "যানবাহন থেকে নামলেন")
+		hud.notify(("চলছে: %s" % str(vp["kind"])) if driving else "যানবাহন থেকে নামলেন")
 
 
-func _nearest_vehicle() -> Vector2:
-	if city.road_points.is_empty(): return Vector2.ZERO
-	var best: Vector2 = city.road_points[0]
-	for p in city.road_points:
-		if p.distance_to(hero.position) < best.distance_to(hero.position):
-			best = p
+func _nearest_vehicle() -> Dictionary:
+	if city.vehicles.is_empty():
+		return {}
+	var best: Dictionary = city.vehicles[0]
+	for v in city.vehicles:
+		if (v["pos"] as Vector2).distance_to(hero.position) < (best["pos"] as Vector2).distance_to(hero.position):
+			best = v
 	return best
 
 
@@ -424,7 +452,7 @@ func finish(success: bool, reason: String) -> void:
 	running = false
 	game_over = true
 	if success:
-		Game.complete_mission(Game.current_mission, score, elapsed, alarms, obj_index + 1, objectives.size())
+		Game.complete_mission(Game.current_mission, score, elapsed, alarms, obj_index, objectives.size())
 		Sfx.play("medal")
 	else:
 		Game.fail_mission(Game.current_mission)
@@ -433,11 +461,22 @@ func finish(success: bool, reason: String) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and hud != null and not hud.blocking():
-		if event.keycode == KEY_R:
-			hud.buy("medkit", 60)
-		if event.keycode == KEY_F:
-			hud.buy("bandage", 30)
+	if not (event is InputEventKey and event.pressed):
+		return
+	if event.keycode == KEY_ESCAPE and running and not ended:
+		if hud != null and hud.blocking():
+			hud.close_panel()
+		else:
+			paused = not paused
+			if hud != null:
+				hud.notify("বিরতি — ESC চাপলে আবার শুরু" if paused else "অভিযান পুনরায় শুরু")
+		return
+	if paused or hud == null or hud.blocking():
+		return
+	if event.keycode == KEY_R:
+		hud.buy("medkit", 60)
+	if event.keycode == KEY_F:
+		hud.buy("bandage", 30)
 
 
 class MarkerLayer extends Node2D:

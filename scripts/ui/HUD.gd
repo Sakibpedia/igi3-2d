@@ -74,9 +74,18 @@ func refresh() -> void:
 	var alarm_s: String = "নীরব" if mission.alarms == 0 else ("অ্যালার্ম ×%d" % mission.alarms)
 	lbl_status.text = "৳ %d   •   %s   •   %s   •   %s   •   পদমর্যাদা: %s" % [
 		Game.wallet, alarm_s, _time(mission.elapsed), "থার্মাল" if mission.thermal else "সাধারণ", Game.rank()]
-	notice_time = maxf(0.0, notice_time - 0.016)
 	lbl_notice.text = notice if notice_time > 0.0 else ""
 	mini.queue_redraw()
+
+
+func tick(delta: float) -> void:
+	notice_time = maxf(0.0, notice_time - delta)
+
+
+func close_panel() -> void:
+	if state in ["shop", "gate"]:
+		state = ""
+		panel.visible = false
 
 
 func _time(t: float) -> String:

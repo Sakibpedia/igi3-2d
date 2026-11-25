@@ -58,7 +58,9 @@ jobs:
             @{ Scene = "CityTest"; Mission = ""; Pass = '\[CITY2D\] PASS' },
             @{ Scene = "SaveTest"; Mission = ""; Pass = '\[SAVE2D\] PASS' },
             @{ Scene = "MissionTest"; Mission = "1"; Pass = '\[IGI2D\] PASS' },
-            @{ Scene = "MissionTest"; Mission = "15"; Pass = '\[IGI2D\] PASS' }
+            @{ Scene = "MissionTest"; Mission = "15"; Pass = '\[IGI2D\] PASS' },
+            @{ Scene = "PlayTest"; Mission = "1"; Pass = '\[PLAY2D\] PASS' },
+            @{ Scene = "PlayTest"; Mission = "15"; Pass = '\[PLAY2D\] PASS' }
           )
           foreach ($t in $tests) {
             if ($t.Mission) { $env:MISSION = $t.Mission }
@@ -67,7 +69,7 @@ jobs:
             & $env:GODOT --headless --path . "res://tools/test/$($t.Scene).tscn" *> $log
             $code = $LASTEXITCODE
             Write-Output "--- $($t.Scene) M$($t.Mission) (exit $code) ---"
-            Select-String -Path $log -Pattern '\[CITY2D\]|\[SAVE2D\]|\[IGI2D\]|SCRIPT ERROR|Parse Error' |
+            Select-String -Path $log -Pattern '\[CITY2D\]|\[SAVE2D\]|\[IGI2D\]|\[PLAY2D\]|SCRIPT ERROR|Parse Error' |
               ForEach-Object { $_.Line } | Out-Host
             if ($code -ne 0) { throw "$($t.Scene) exited with $code" }
             if (-not (Select-String -Path $log -Pattern $t.Pass -Quiet)) { throw "$($t.Scene) did not print PASS" }

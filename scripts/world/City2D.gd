@@ -11,6 +11,7 @@ var buildings: Array = []      # {center, pts, rect, floors, door, kind}
 var roads: Array = []          # PackedVector2Array in world pixels
 var shops: Array = []          # {pos, kind, name, color}
 var gates: Array = []          # Vector2 positions
+var vehicles: Array = []       # {pos, kind, color}
 var road_points: Array = []    # Vector2 spawn/interaction points
 var extraction: Vector2 = Vector2.ZERO
 var _grid: Dictionary = {}     # cell key -> Array[int]
@@ -95,6 +96,12 @@ func _build() -> void:
 			"color": Color(0.85, 0.68, 0.32) if k == 1 or k == 0 else Color(0.35, 0.72, 0.68)})
 	for i in 15:
 		gates.append(road_points[(i * 11 + 5) % road_points.size()])
+	var kinds_v := ["car", "cng", "rickshaw", "pickup"]
+	var colors_v := [Color(0.55, 0.62, 0.66), Color(0.85, 0.62, 0.20),
+		Color(0.35, 0.70, 0.55), Color(0.62, 0.45, 0.36)]
+	for i in 9:
+		vehicles.append({"pos": road_points[(i * 13 + 7) % road_points.size()],
+			"kind": kinds_v[i % kinds_v.size()], "color": colors_v[i % colors_v.size()]})
 	extraction = road_points[1] + Vector2(24, 24)
 
 
@@ -184,6 +191,13 @@ func _draw() -> void:
 		draw_rect(Rect2(p - Vector2(11, 8), Vector2(22, 4)), s["color"])
 	for g in gates:
 		draw_rect(Rect2(g - Vector2(9, 9), Vector2(18, 18)), Color(0.85, 0.45, 0.18), false, 2.0)
+	# Vehicles (sedan / CNG / rickshaw / pickup)
+	for v in vehicles:
+		var p: Vector2 = v["pos"]
+		draw_rect(Rect2(p - Vector2(12, 7), Vector2(24, 14)), v["color"])
+		draw_rect(Rect2(p - Vector2(5, 5), Vector2(10, 10)), Color(0.12, 0.18, 0.20))
+		draw_circle(p + Vector2(-8, -7), 2.5, Color(0.08, 0.09, 0.10))
+		draw_circle(p + Vector2(8, 7), 2.5, Color(0.08, 0.09, 0.10))
 	# Extraction zone
 	draw_circle(extraction, 30.0, Color(0.15, 0.65, 0.55, 0.18))
 	draw_circle(extraction, 30.0, Color(0.25, 0.85, 0.70), false, 3.0)

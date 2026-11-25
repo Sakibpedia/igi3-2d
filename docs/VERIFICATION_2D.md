@@ -43,6 +43,17 @@ Environment: Godot **4.3 stable**, Windows, headless. All commands exited 0.
 
 `[IGI2D] ALL 15 MISSIONS PASS`
 
+## Deep playthrough test (v1.1)
+
+`powershell tools/test/run_all.ps1 -Deep` uses `PlayTest.tscn`, which exercises
+real gameplay hooks instead of only counters: shooting (including hero
+aggression registration), an air-force airstrike call, a shop purchase and heal,
+walkable spawn, 9 visible vehicles, and all 9 objectives per mission through
+interaction/proximity/kill hooks.
+
+`[PLAY2D] ALL 15 MISSIONS PASS` — M01 through M15, 393–407 actors each.
+See [REVIEW_2D.md](REVIEW_2D.md) for the 11 issues found and fixed.
+
 ## Menu, export and launch
 
 - Main menu headless smoke: exit 0, zero script/parse errors, custom Bengali font loads.

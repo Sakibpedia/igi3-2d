@@ -1,19 +1,22 @@
 # Runs the headless mission smoke test for all 15 missions.
-param([string]$Godot = "godot", [switch]$KeepLogs)
+param([string]$Godot = "godot", [switch]$KeepLogs, [switch]$Deep)
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $dir = Join-Path $PSScriptRoot "out"
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 $failed = @()
+$scene = "MissionTest"
+$tag = "IGI2D"
+if ($Deep) { $scene = "PlayTest"; $tag = "PLAY2D" }
 
 for ($m = 1; $m -le 15; $m++) {
     $env:MISSION = "$m"
-    $log = Join-Path $dir "mission_$m.log"
-    & $Godot --headless --path $root "res://tools/test/MissionTest.tscn" *> $log
+    $log = Join-Path $dir "$scene-$m.log"
+    & $Godot --headless --path $root "res://tools/test/$scene.tscn" *> $log
     $code = $LASTEXITCODE
-    $line = (Select-String -Path $log -Pattern '\[IGI2D\]' | Select-Object -Last 1).Line
+    $line = (Select-String -Path $log -Pattern "\[$tag\]" | Select-Object -Last 1).Line
     Write-Output "M$m (exit $code): $line"
-    if ($code -ne 0 -or $line -notmatch '\[IGI2D\] PASS') {
+    if ($code -ne 0 -or $line -notmatch "\[$tag\] PASS") {
         $failed += $m
         Select-String -Path $log -Pattern 'FAIL|SCRIPT ERROR' | Select-Object -First 6 |
             ForEach-Object { Write-Output "    $($_.Line.Trim())" }
@@ -22,4 +25,4 @@ for ($m = 1; $m -le 15; $m++) {
 }
 Remove-Item Env:MISSION -ErrorAction SilentlyContinue
 if ($failed.Count -gt 0) { throw "Failing missions: $($failed -join ', ')" }
-Write-Output "[IGI2D] ALL 15 MISSIONS PASS"
+Write-Output "[$tag] ALL 15 MISSIONS PASS"

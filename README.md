@@ -77,11 +77,12 @@ python tools/make_visuals.py
 godot --headless --path . res://tools/test/CityTest.tscn
 godot --headless --path . res://tools/test/SaveTest.tscn
 $env:MISSION = '1'; godot --headless --path . res://tools/test/MissionTest.tscn
-powershell tools/test/run_all.ps1   # all 15 missions
+powershell tools/test/run_all.ps1            # all 15 missions (smoke)
+powershell tools/test/run_all.ps1 -Deep      # all 15 missions (playthrough checks)
 godot --headless --path . --export-release "Windows Desktop"
 ```
 
-Each test prints `[CITY2D]`, `[SAVE2D]` or `[IGI2D] PASS` and exits with 0. Full results for all 15 missions are in [docs/VERIFICATION_2D.md](docs/VERIFICATION_2D.md).
+Each test prints `[CITY2D]`, `[SAVE2D]`, `[IGI2D]` or `[PLAY2D] PASS` and exits with 0. Full results are in [docs/VERIFICATION_2D.md](docs/VERIFICATION_2D.md); the neutral review and list of fixes are in [docs/REVIEW_2D.md](docs/REVIEW_2D.md).
 
 ## Credits and licensing
 
