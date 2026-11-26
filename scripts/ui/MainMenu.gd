@@ -60,7 +60,7 @@ func _ready() -> void:
 	add_child(help)
 
 	var credit := Label.new()
-	credit.text = "© S M Nazmuz Sakib   •   Map data © OpenStreetMap contributors (ODbL 1.0)   •   Fan-made, not an official IGI product"
+	credit.text = "Made by S M Nazmuz Sakib   •   Map data © OpenStreetMap contributors (ODbL 1.0)"
 	credit.position = Vector2(72, 682)
 	credit.size = Vector2(1140, 26)
 	credit.add_theme_font_size_override("font_size", 14)

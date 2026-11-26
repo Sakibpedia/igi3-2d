@@ -108,4 +108,4 @@ Each test prints `[CITY2D]`, `[SAVE2D]`, `[IGI2D]` or `[PLAY2D] PASS` and exits 
 - Game code, design and generated art: **S M Nazmuz Sakib**. No open-source license is granted for the original work.
 - Map data: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), ODbL 1.0.
 - Fonts: Noto Sans / Noto Sans Bengali (SIL Open Font License 1.1).
-- This is an independent 2D reinterpretation of the IGI 3 Sontek Kajla campaign, not an official IGI product.
+- Made by S M Nazmuz Sakib.
